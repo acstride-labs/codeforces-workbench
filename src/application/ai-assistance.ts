@@ -38,7 +38,10 @@ export function parseAssistantResult(
 /** Shared request path: original English statement, optional unsaved source, common AI cache. */
 export class AiAssistance {
   private pending = new Map<string, Promise<AssistantResult>>();
-  private observers = new Map<string, { latest: string; listeners: Set<(text: string) => void> }>();
+  private observers = new Map<
+    string,
+    { latest: string; thinking: string; listeners: Set<(text: string, thinking?: string) => void> }
+  >();
   private abort = new AbortController();
   constructor(
     private settings: AiSettings,
@@ -49,7 +52,7 @@ export class AiAssistance {
     target: AssistantTarget,
     statement: string,
     code?: string,
-    onOutput?: (text: string) => void,
+    onOutput?: (text: string, thinking?: string) => void,
   ): Promise<AssistantResult> {
     const options = this.settings.assistanceOptions()[kind];
     if (!options.show) throw new Error('Enable this AI feature in AI assistance settings first.');
@@ -85,7 +88,7 @@ export class AiAssistance {
       const stream = this.observers.get(id);
       if (onOutput && stream) {
         stream.listeners.add(onOutput);
-        if (stream.latest) onOutput(stream.latest);
+        if (stream.latest || stream.thinking) onOutput(stream.latest, stream.thinking);
       }
       try {
         return await existing;
@@ -93,12 +96,17 @@ export class AiAssistance {
         if (onOutput) stream?.listeners.delete(onOutput);
       }
     }
-    const stream = { latest: '', listeners: new Set<(text: string) => void>() };
+    const stream = {
+      latest: '',
+      thinking: '',
+      listeners: new Set<(text: string, thinking?: string) => void>(),
+    };
     if (onOutput) stream.listeners.add(onOutput);
     this.observers.set(id, stream);
-    const publish = (text: string) => {
+    const publish = (text: string, thinking = '') => {
+      stream.thinking = thinking;
       stream.latest = text;
-      for (const listener of stream.listeners) listener(text);
+      for (const listener of stream.listeners) listener(text, thinking);
     };
     const task = this.client
       .complete(

@@ -746,8 +746,8 @@ export class ContestController implements vscode.Disposable, vscode.TreeDataProv
           code = document.getText();
         }
       }
-      const result = await this.assistance.run(kind, target, statement.html, code, (text) => {
-        post({ type: 'assistantResult', requestId, status: 'pending', result: { text } });
+      const result = await this.assistance.run(kind, target, statement.html, code, (text, thinking) => {
+        post({ type: 'assistantResult', requestId, status: 'pending', result: { text, thinking } });
       });
       post({ type: 'assistantResult', requestId, status: 'ready', result });
     } catch (error) {

@@ -451,5 +451,6 @@
   "Save": "Save",
   "Statement images are loading in the background…": "Statement images are loading in the background…",
   "AI request timed out. Please retry.": "AI request timed out. Please retry.",
-  "AI request cancelled.": "AI request cancelled."
+  "AI request cancelled.": "AI request cancelled.",
+  "AI is thinking…": "AI is thinking…"
 }

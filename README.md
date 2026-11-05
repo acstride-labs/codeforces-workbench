@@ -161,6 +161,8 @@ Configure and test your provider under **Settings → AI assistance**. The origi
 
 AI Hint, Debug and Coding requests have a 300-second total timeout. Timeout and cancellation errors use task-neutral messages in all four interface languages.
 
+Debug and Coding stream the answer as it arrives. If a compatible service also streams `reasoning_content` or `reasoning`, a muted single-line ticker above the answer shows that thinking text while the request is running. Thinking is kept separate from reference code and is not saved in the response cache. OpenAI's native Chat Completions API does not expose raw thinking text; no ticker is shown when the service does not return it.
+
 Each feature has a visibility switch, response-language selector, and editable prompt. Save AI assistance settings to apply them. Restoring a default prompt requires confirmation and updates only the draft until saved. `{{language}}`, `{{programmingLanguage}}`, and `{{hintCount}}` are substituted before requesting the model; the original prompt is preserved. Statement/source data is provided separately. Tasks share the configured input/output cache and duplicate in-flight requests are merged. Results for an old problem cannot appear in another problem’s dialog.
 
 ## Incremental downloads

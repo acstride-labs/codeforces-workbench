@@ -451,5 +451,6 @@
   "Save": "保存",
   "Statement images are loading in the background…": "問題文の画像をバックグラウンドで読み込み中…",
   "AI request timed out. Please retry.": "AI リクエストがタイムアウトしました。再試行してください。",
-  "AI request cancelled.": "AI リクエストがキャンセルされました。"
+  "AI request cancelled.": "AI リクエストがキャンセルされました。",
+  "AI is thinking…": "AI が思考中…"
 }

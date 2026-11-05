@@ -157,3 +157,24 @@ it('renders partial solution text while pending and enables copying only after c
   expect(elements(render(), 'textarea')[0].value).toBe('complete code');
   expect(elements(render(), 'button').find((p) => p.children === 'Copy code').disabled).toBe(false);
 });
+
+it('shows thinking above the answer while pending and clears it on completion or target changes', () => {
+  const requestId = open('AI Solution');
+  message({
+    type: 'assistantResult',
+    requestId,
+    status: 'pending',
+    result: { thinking: 'Consider the constraints', text: 'partial' },
+  });
+  let tree = render();
+  expect(
+    elements(tree, 'div').find((p) => p.className === 'assistant-thinking')['aria-label'],
+  ).toBe('AI is thinking…');
+  expect(elements(tree, 'textarea')[0].value).toBe('partial');
+  message({ type: 'assistantResult', requestId, status: 'ready', result: { text: 'answer' } });
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
+  render({ ...target, index: 'B' });
+  message({ type: 'assistantResult', requestId, status: 'pending', result: { thinking: 'stale' } });
+  tree = render({ ...target, index: 'B' });
+  expect(elements(tree, 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
+});
