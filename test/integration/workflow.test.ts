@@ -32,7 +32,13 @@ describe('local C++ workflow', () => {
     ]);
     const result = await new RunTests(restored, new CppRunner()).execute(
       'A',
-      { command: process.env.CXX || 'g++', args: ['-std=c++20'], timeoutMs: 1000 },
+      {
+        command: process.env.CXX || 'g++',
+        args: ['-std=c++20'],
+        // This checks output/storage behavior, not performance. Newly built executables
+        // can take longer to start on hosted Windows runners; TLE is tested separately.
+        timeoutMs: process.platform === 'win32' ? 10000 : 1000,
+      },
       new AbortController().signal,
     );
     expect(result.compileError).toBeUndefined();
