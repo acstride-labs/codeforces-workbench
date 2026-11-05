@@ -34,7 +34,7 @@ export type AiConfig = z.infer<typeof aiConfigSchema>;
 export interface AiState {
   config: AiConfig;
   hasKey: boolean;
-  result?: { status: 'checking' | 'passed' | 'failed'; message?: string };
+  result?: { status: 'checking' | 'passed' | 'failed'; message?: string; thinking?: string };
   notice?: string;
 }
 

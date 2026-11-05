@@ -105,8 +105,9 @@ export class AiAssistance {
     this.observers.set(id, stream);
     const publish = (text: string, thinking = '') => {
       stream.thinking = thinking;
-      stream.latest = text;
-      for (const listener of stream.listeners) listener(text, thinking);
+      // Hint JSON remains hidden until the complete response passes validation.
+      stream.latest = kind === 'hint' ? '' : text;
+      for (const listener of stream.listeners) listener(stream.latest, thinking);
     };
     const task = this.client
       .complete(
@@ -118,7 +119,7 @@ export class AiAssistance {
         (output) => {
           parseAssistantResult(kind, output, options.hintCount);
         },
-        kind === 'hint' ? undefined : publish,
+        publish,
       )
       .then((output) => parseAssistantResult(kind, output, options.hintCount));
     this.pending.set(id, task);

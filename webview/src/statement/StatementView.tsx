@@ -1,3 +1,4 @@
+import { ThinkingTicker } from '../ai/ThinkingTicker';
 import { AssistantActions } from '../ai/AssistantActions';
 import { AiIcon } from '../ai/AiIcon';
 import React, { useEffect, useRef, useState } from 'react';
@@ -72,7 +73,7 @@ export function StatementView() {
       trust: false,
     });
     if (viewport.current) viewport.current.scrollTop = scroll.current.get(key.current) || 0;
-  }, [data, translation, translated]);
+  }, [data, translation?.html, translated]);
   return (
     <main className="answer-pane">
       <div className="statement-pane">
@@ -169,6 +170,9 @@ export function StatementView() {
                 </button>
               )}
             </p>
+          )}
+          {translated && translation?.status === 'pending' && (
+            <ThinkingTicker key={key.current} text={translation.thinking} />
           )}
           <div
             ref={content}

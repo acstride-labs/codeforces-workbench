@@ -251,7 +251,18 @@ export class SettingsController implements vscode.Disposable {
             this.aiResult = { status: 'checking' };
             await this.publish();
             const key = message.apiKey || (await this.ai.key(message.config));
-            const reply = await this.aiClient.test(message.config, key, this.aiAbort.signal);
+            const abort = this.aiAbort;
+            const reply = await this.aiClient.test(
+              message.config,
+              key,
+              abort.signal,
+              (thinking) => {
+                if (this.aiAbort !== abort || abort.signal.aborted) return;
+                this.aiResult = { status: 'checking', thinking };
+                // Avoid rereading all templates on every streamed token.
+                void this.panel?.webview.postMessage({ type: 'aiThinking', thinking });
+              },
+            );
             this.aiResult = { status: 'passed', message: reply };
           }
         } catch (error) {

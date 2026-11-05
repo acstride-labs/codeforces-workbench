@@ -235,3 +235,52 @@ it('rejects debug requests for a different active problem and unavailable origin
     }),
   );
 });
+
+it('delivers translation thinking before valid HTML and removes it when the translation completes', async () => {
+  const { defaultTranslationOptions } = await import('../../src/shared/ai-protocol');
+  const controller = Object.create(ContestController.prototype) as any;
+  controller.statementTarget = {
+    contestId: 2261,
+    index: 'A',
+    collection: 'contest',
+    statement: { fetchedAt: 1, html: '<p>Original</p>' },
+  };
+  controller.ai = {
+    translationOptions: () => ({ ...defaultTranslationOptions, enabled: true }),
+    config: () => ({ baseUrl: 'https://example.com', model: 'model' }),
+    key: async () => '',
+  };
+  let publish!: (html: string, thinking?: string) => void;
+  let finish!: (html: string) => void;
+  controller.aiClient = {
+    complete: vi.fn((...args: any[]) => {
+      publish = args[6];
+      return new Promise<string>((resolve) => {
+        finish = resolve;
+      });
+    }),
+  };
+  controller.mapAssets = (_id: number, statement: unknown) => statement;
+  const postMessage = vi.fn();
+  controller.dashboard = { webview: { postMessage } };
+  const task = controller.showTranslation({ contestId: 2261, index: 'A' });
+  await vi.waitFor(() => expect(controller.aiClient.complete).toHaveBeenCalledTimes(1));
+  publish('', 'Translate the constraints');
+  expect(postMessage).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      status: 'pending',
+      thinking: 'Translate the constraints',
+      html: undefined,
+    }),
+  );
+  publish('<p>Partial</p>', 'Continue');
+  expect(postMessage).toHaveBeenLastCalledWith(
+    expect.objectContaining({ status: 'pending', thinking: 'Continue', html: '<p>Partial</p>' }),
+  );
+  finish('<p>Done</p>');
+  await task;
+  expect(postMessage).toHaveBeenLastCalledWith(
+    expect.objectContaining({ status: 'ready', html: '<p>Done</p>' }),
+  );
+  expect(postMessage.mock.calls.at(-1)![0]).not.toHaveProperty('thinking');
+});

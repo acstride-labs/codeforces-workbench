@@ -27,8 +27,20 @@ export class AiClient {
     private timeoutMs = 30000,
     private cache?: AiRequestCache,
   ) {}
-  async test(config: AiConfig, key: string, signal?: AbortSignal): Promise<string> {
-    return this.perform(config, key, [{ role: 'user', content: aiTestMessage }], signal);
+  async test(
+    config: AiConfig,
+    key: string,
+    signal?: AbortSignal,
+    onThinking?: (thinking: string) => void,
+  ): Promise<string> {
+    return this.perform(
+      config,
+      key,
+      [{ role: 'user', content: aiTestMessage }],
+      signal,
+      this.timeoutMs,
+      onThinking ? (_text, thinking) => onThinking(thinking ?? '') : undefined,
+    );
   }
   configureCache(options: AiCacheOptions) {
     return this.cache?.configure(options);

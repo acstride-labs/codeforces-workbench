@@ -201,3 +201,25 @@ it('persists independent assistant prompts, languages, visibility and hint count
   expect(listener).toHaveBeenCalledTimes(1);
   subscription.dispose();
 });
+
+it('streams redacted thinking during a connection test while preserving its fixed prompt', async () => {
+  const request = vi.fn<typeof fetch>(
+    async () =>
+      new Response(
+        [
+          'data: {"choices":[{"delta":{"reasoning_content":"check test-secret"}}]}\n\n',
+          'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n',
+          'data: [DONE]\n\n',
+        ].join(''),
+        { headers: { 'content-type': 'text/event-stream' } },
+      ),
+  );
+  const thinking = vi.fn();
+  expect(await new AiClient(request).test(config, 'test-secret', undefined, thinking)).toBe(
+    'Hello',
+  );
+  expect(thinking).toHaveBeenCalledWith('check [redacted]');
+  const body = JSON.parse(request.mock.calls[0][1]!.body as string);
+  expect(body.stream).toBe(true);
+  expect(body.messages).toEqual([{ role: 'user', content: aiTestMessage }]);
+});
