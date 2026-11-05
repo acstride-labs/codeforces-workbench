@@ -146,6 +146,8 @@ npm run package
 npm run verify:vsix
 ```
 
+PR CI builds packages for all four platforms. After a build finishes, `github-actions[bot]` updates a comment on the PR with the commit, build result, and available test packages. GitHub sign-in is required to access artifacts, which are retained for 30 days. These are test builds and are not published to Marketplace. Fork PRs may need maintainer approval before CI runs.
+
 Useful references:
 
 - [Native bundle builds and verification](packaging/README.md)
