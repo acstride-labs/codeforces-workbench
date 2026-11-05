@@ -104,6 +104,14 @@ export function AssistantActions({
           </button>
         </header>
         {status === 'pending' && <p role="status">{t('AI task is running, please wait.')}</p>}
+        {status === 'pending' && result?.thinking && open !== 'hint' && (
+          <div className="assistant-thinking" role="status" aria-label={t('AI is thinking…')}>
+            <span className="assistant-thinking-label">{t('AI is thinking…')}</span>
+            <span className="assistant-thinking-track" key={request.current}>
+              <span>{result.thinking.slice(-1000).replace(/\s+/g, ' ')}</span>
+            </span>
+          </div>
+        )}
         {status === 'failed' && (
           <>
             <p className="error" role="alert">

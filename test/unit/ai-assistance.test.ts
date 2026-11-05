@@ -130,3 +130,29 @@ it('rejects hidden features before making a model request', async () => {
   expect(f.complete).not.toHaveBeenCalled();
   f.service.dispose();
 });
+
+it('forwards thinking separately and replays it to a second assistance viewer', async () => {
+  const f = fixture();
+  let finish!: (text: string) => void;
+  let publish!: (text: string, thinking?: string) => void;
+  f.complete.mockImplementationOnce((...args: unknown[]) => {
+    publish = args[6] as typeof publish;
+    return new Promise<string>((resolve) => {
+      finish = resolve;
+    });
+  });
+  const firstOutput = vi.fn(),
+    secondOutput = vi.fn();
+  const first = f.service.run('coding', target, 'Original', undefined, firstOutput);
+  await vi.waitFor(() => expect(f.complete).toHaveBeenCalledTimes(1));
+  publish('', 'Check the constraints');
+  expect(firstOutput).toHaveBeenCalledWith('', 'Check the constraints');
+  const second = f.service.run('coding', target, 'Original', undefined, secondOutput);
+  await vi.waitFor(() => expect(secondOutput).toHaveBeenCalledWith('', 'Check the constraints'));
+  publish('print(42)', 'Check the constraints');
+  finish('print(42)');
+  expect(await first).toEqual({ text: 'print(42)' });
+  expect(await second).toEqual({ text: 'print(42)' });
+  expect(f.complete).toHaveBeenCalledTimes(1);
+  f.service.dispose();
+});

@@ -124,3 +124,56 @@ it('never caches a disconnected partial response and permits a fresh retry', asy
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+it('streams reasoning separately from the final answer, including split UTF-8 frames', async () => {
+  const updates: [string, string | undefined][] = [];
+  const reasoning = (field: string, text: string) =>
+    `data: ${JSON.stringify({ choices: [{ delta: { [field]: text } }] })}\n\n`;
+  const answer = await readChatStream(
+    response(
+      reasoning('reasoning_content', '分析') +
+        reasoning('reasoning', '约束') +
+        frame('print(42)') +
+        'data: [DONE]\n\n',
+    ),
+    (text, thinking) => updates.push([text, thinking]),
+  );
+  expect(updates).toEqual([
+    ['', '分析'],
+    ['', '分析约束'],
+    ['print(42)', '分析约束'],
+  ]);
+  expect(answer).toBe('print(42)');
+});
+
+it('replays reasoning to late stream subscribers and keeps it out of the final answer', async () => {
+  let controller!: ReadableStreamDefaultController<Uint8Array>;
+  const request = vi.fn<typeof fetch>(
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(value) {
+            controller = value;
+          },
+        }),
+        { headers: { 'content-type': 'text/event-stream' } },
+      ),
+  );
+  const client = new AiClient(request);
+  const a = vi.fn(),
+    b = vi.fn();
+  const first = client.complete(config, 'secret', [], undefined, 300000, undefined, a);
+  await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1));
+  controller.enqueue(
+    new TextEncoder().encode(
+      'data: {"choices":[{"delta":{"reasoning_content":"check secret"}}]}\n\n',
+    ),
+  );
+  await vi.waitFor(() => expect(a).toHaveBeenCalledWith('', 'check [redacted]'));
+  const second = client.complete(config, 'secret', [], undefined, 300000, undefined, b);
+  expect(b).toHaveBeenCalledWith('', 'check [redacted]');
+  controller.enqueue(new TextEncoder().encode(frame('answer') + 'data: [DONE]\n\n'));
+  controller.close();
+  expect(await first).toBe('answer');
+  expect(await second).toBe('answer');
+});
