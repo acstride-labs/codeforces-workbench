@@ -172,3 +172,9 @@ Statements and samples become usable before images finish. Images are cached in 
 ## Release process
 
 The first public preview is **0.1.0**. Publishing a GitHub Release starts the four-platform build, attaches verified VSIX packages and SHA256 checksums, and publishes the same packages to Marketplace when authentication is configured. See [the release runbook](docs/RELEASING.md) for one-time authentication setup, release channels and retries.
+
+## PR test packages
+
+Every pull request runs the four-platform CI build. After it finishes, `github-actions[bot]` creates or updates one **VSIX test packages** comment with downloads for Linux x64, Windows x64, macOS Apple Silicon and macOS Intel. Sign in to GitHub, download and extract the matching ZIP, then run **Extensions: Install from VSIX…** in desktop VS Code. Artifacts are retained for 30 days; failed platforms link to the build logs instead. PR builds do not publish to Marketplace or create a Release.
+
+New pushes cancel older PR builds. Reports are bound to the PR's current commit; completed old builds cannot replace the latest report. Fork PRs may require a maintainer to approve the CI run under GitHub's Actions policy. The comment workflow runs trusted default-branch code with comment permissions, without executing PR code or downloading artifacts. Repository Actions must be enabled and organization policy must permit the workflow's `pull-requests: write` permission. The bot starts working after its workflow is merged into the default branch; earlier runs do not generate comments retroactively (rerun CI to publish a report).

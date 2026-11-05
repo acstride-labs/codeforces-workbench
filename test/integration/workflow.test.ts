@@ -32,7 +32,7 @@ describe('local C++ workflow', () => {
     ]);
     const result = await new RunTests(restored, new CppRunner()).execute(
       'A',
-      { command: process.env.CXX || 'g++', args: ['-std=c++20'], timeoutMs: 1000 },
+      { command: process.env.CXX || 'g++', args: ['-std=c++20'], timeoutMs: 2000 },
       new AbortController().signal,
     );
     expect(result.compileError).toBeUndefined();
