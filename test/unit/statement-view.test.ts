@@ -46,6 +46,10 @@ function render() {
   return tree;
 }
 function elements(tree: ReactElement, type: string): any[] {
+  if (typeof tree.type === 'function' && tree.type.name === 'ThinkingTicker') {
+    const rendered = (tree.type as any)(tree.props);
+    return rendered ? elements(rendered, type) : [];
+  }
   const props = tree.props as any;
   return [
     ...(tree.type === type ? [props] : []),
@@ -141,4 +145,31 @@ it('keeps the pending selection when returning before the translation finishes',
   statement('A');
   expect(showingTranslation()).toBe(true);
   expect(harness.send.mock.calls.filter(([m]) => m.type === 'translateStatement')).toHaveLength(1);
+});
+
+it('shows translation thinking only for the selected translated problem and clears it on completion', () => {
+  statement('A');
+  toggle();
+  message({
+    type: 'translation',
+    contestId: 2261,
+    index: 'A',
+    collection: 'contest',
+    status: 'pending',
+    thinking: 'Read the statement',
+  });
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(true);
+  statement('B');
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
+  statement('A');
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(true);
+  message({
+    type: 'translation',
+    contestId: 2261,
+    index: 'A',
+    collection: 'contest',
+    status: 'ready',
+    html: '<p>Translated</p>',
+  });
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
 });

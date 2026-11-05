@@ -49,7 +49,12 @@ export class ContestController implements vscode.Disposable, vscode.TreeDataProv
     language: Language;
     problems: { index: string; name: string }[];
     collection: CodeforcesCollection;
-    translation?: { status: 'pending' | 'ready' | 'failed'; html?: string; error?: string };
+    translation?: {
+      status: 'pending' | 'ready' | 'failed';
+      html?: string;
+      thinking?: string;
+      error?: string;
+    };
   };
   private selectedId?: number;
   private rankMode: 'all' | 'nearby' | 'search' = 'all';
@@ -688,7 +693,7 @@ export class ContestController implements vscode.Disposable, vscode.TreeDataProv
   }
   private async translate(
     statement: import('../domain/contest').Statement,
-    onOutput?: (html: string) => void,
+    onOutput?: (html: string | undefined, thinking?: string) => void,
   ) {
     const options = this.ai.translationOptions(),
       config = this.ai.config();
@@ -704,12 +709,15 @@ export class ContestController implements vscode.Disposable, vscode.TreeDataProv
       (text) => {
         sanitizeTranslation(text, statement.html);
       },
-      (text) => {
-        if (onOutput) {
+      (text, thinking) => {
+        let html: string | undefined;
+        if (text.trim()) {
           try {
-            onOutput(sanitizeTranslation(text, statement.html));
+            html = sanitizeTranslation(text, statement.html);
           } catch {}
         }
+        // Thinking can arrive before any (valid) HTML. Always deliver it.
+        onOutput?.(html, thinking);
       },
     );
     return sanitizeTranslation(output, statement.html);
@@ -806,13 +814,14 @@ export class ContestController implements vscode.Disposable, vscode.TreeDataProv
       return;
     }
     if (!target.statement.fetchedAt) return;
-    const pending: { status: 'pending'; html?: string } = { status: 'pending' };
+    const pending: { status: 'pending'; html?: string; thinking?: string } = { status: 'pending' };
     target.translation = pending;
     this.postTranslation(target);
     try {
-      const html = await this.translate(target.statement, (html) => {
+      const html = await this.translate(target.statement, (html, thinking) => {
         if (target.translation !== pending) return;
-        pending.html = html;
+        if (html !== undefined) pending.html = html;
+        pending.thinking = thinking;
         this.postTranslation(target);
       });
       if (target.translation !== pending) return;

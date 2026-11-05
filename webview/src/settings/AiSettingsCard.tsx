@@ -1,9 +1,11 @@
+import { ThinkingTicker } from '../ai/ThinkingTicker';
 import React, { useEffect, useState } from 'react';
 import { aiConfigSchema, aiKeySchema, type AiState } from '../../../src/shared/ai-protocol';
 import { send } from '../bridge';
 import { useI18n } from '../i18n';
 export function AiSettingsCard({ state, busy }: { state?: AiState; busy: boolean }) {
   const { t } = useI18n();
+  const [thinking, setThinking] = useState(state?.result?.thinking ?? '');
   const [baseUrl, setBaseUrl] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -21,6 +23,17 @@ export function AiSettingsCard({ state, busy }: { state?: AiState; busy: boolean
       setDirty(false);
     }
   }, [state?.notice]);
+  useEffect(() => {
+    setThinking(state?.result?.thinking ?? '');
+  }, [state?.result?.status, state?.result?.thinking]);
+  useEffect(() => {
+    const receive = (event: MessageEvent) => {
+      if (event.data?.type === 'aiThinking' && typeof event.data.thinking === 'string')
+        setThinking(event.data.thinking);
+    };
+    window.addEventListener('message', receive);
+    return () => window.removeEventListener('message', receive);
+  }, []);
   const act = (type: 'saveAI' | 'testAI') => {
     if (!baseUrl.trim() || !model.trim()) {
       setError('Enter an AI Base URL and model name.');
@@ -143,6 +156,7 @@ export function AiSettingsCard({ state, busy }: { state?: AiState; busy: boolean
                   : 'AI connection failed',
             )}
           </strong>
+          {state.result.status === 'checking' && <ThinkingTicker text={thinking} />}
           {state.result.message && (
             <pre>
               {state.result.status === 'passed' ? state.result.message : t(state.result.message)}

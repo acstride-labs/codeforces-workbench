@@ -82,6 +82,7 @@ export type ContestHostMessage =
       collection?: 'contest' | 'standalone';
       status: 'pending' | 'ready' | 'failed' | 'disabled';
       html?: string;
+      thinking?: string;
       error?: string;
     }
   | {

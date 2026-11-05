@@ -280,3 +280,28 @@ it('navigates an already ready settings panel immediately without replaying old 
   await f.receive({ type: 'ready' });
   expect(postMessage).toHaveBeenCalledTimes(2);
 });
+
+it('publishes connection-test thinking without refreshing every setting, and ignores late callbacks', async () => {
+  const f = fixture(),
+    controller = f.controller as any;
+  controller.publish = vi.fn(async () => {});
+  controller.ai = { key: async () => '' };
+  const postMessage = vi.fn();
+  controller.panel = { webview: { postMessage } };
+  let think!: (text: string) => void;
+  controller.aiClient = {
+    test: vi.fn(
+      async (_config: unknown, _key: string, _signal: AbortSignal, callback: typeof think) => {
+        think = callback;
+        callback('Checking response');
+        return 'Hello';
+      },
+    ),
+  };
+  await f.receive({ type: 'testAI', config: { baseUrl: 'https://example.com', model: 'model' } });
+  expect(postMessage).toHaveBeenCalledWith({ type: 'aiThinking', thinking: 'Checking response' });
+  expect(controller.aiResult).toEqual({ status: 'passed', message: 'Hello' });
+  const calls = postMessage.mock.calls.length;
+  think('late thinking');
+  expect(postMessage).toHaveBeenCalledTimes(calls);
+});

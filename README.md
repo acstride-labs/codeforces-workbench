@@ -107,7 +107,7 @@ AI tools are optional. Under **Settings → AI assistance**, enter your provider
 
 Translation is disabled by default. You can enable automatic translation after import, customize prompts and response languages, and configure the shared response cache. Debug and Solution stream answer text when supported by the provider; Hint, Debug, and Solution requests have a 300-second total timeout.
 
-When a compatible provider streams thinking text, Debug and Solution show it in a muted single-line ticker above the answer. Thinking stays separate from generated code and is not saved in the response cache. The ticker appears only when the provider returns thinking text.
+When a compatible provider streams thinking text, Translation, Hint, Debug, Solution, and the connection test show it in a muted single-line ticker above the answer. Thinking stays separate from generated code and is not saved in the response cache. The ticker appears only when the provider returns thinking text.
 
 Generated code is for review and testing. The extension does not overwrite your source or automatically submit AI output. Use AI tools for practice and follow each contest's rules.
 

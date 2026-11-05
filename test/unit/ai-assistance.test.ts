@@ -157,3 +157,28 @@ it('forwards thinking separately and replays it to a second assistance viewer', 
   expect(f.complete).toHaveBeenCalledTimes(1);
   f.service.dispose();
 });
+
+it('streams hint thinking to all viewers while withholding partial JSON until validation completes', async () => {
+  const f = fixture();
+  let publish!: (text: string, thinking?: string) => void;
+  let finish!: (text: string) => void;
+  f.complete.mockImplementationOnce((...args: unknown[]) => {
+    publish = args[6] as typeof publish;
+    return new Promise<string>((resolve) => {
+      finish = resolve;
+    });
+  });
+  const a = vi.fn(),
+    b = vi.fn();
+  const first = f.service.run('hint', target, 'Original', undefined, a);
+  await vi.waitFor(() => expect(f.complete).toHaveBeenCalledTimes(1));
+  publish('{"hints":["partial secret', 'Check the constraints');
+  expect(a).toHaveBeenLastCalledWith('', 'Check the constraints');
+  const second = f.service.run('hint', target, 'Original', undefined, b);
+  await vi.waitFor(() => expect(b).toHaveBeenCalledWith('', 'Check the constraints'));
+  finish('{"hints":["one","two","three"]}');
+  expect(await first).toEqual({ hints: ['one', 'two', 'three'] });
+  expect(await second).toEqual({ hints: ['one', 'two', 'three'] });
+  expect(a.mock.calls.some(([text]) => text.includes('partial secret'))).toBe(false);
+  f.service.dispose();
+});

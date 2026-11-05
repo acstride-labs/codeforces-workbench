@@ -52,6 +52,10 @@ function render(currentTarget = target) {
   return tree;
 }
 function elements(tree: ReactElement, type: string): any[] {
+  if (typeof tree.type === 'function' && tree.type.name === 'ThinkingTicker') {
+    const rendered = (tree.type as any)(tree.props);
+    return rendered ? elements(rendered, type) : [];
+  }
   const props = tree.props as any;
   return [
     ...(tree.type === type ? [props] : []),
@@ -177,4 +181,25 @@ it('shows thinking above the answer while pending and clears it on completion or
   message({ type: 'assistantResult', requestId, status: 'pending', result: { thinking: 'stale' } });
   tree = render({ ...target, index: 'B' });
   expect(elements(tree, 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
+});
+
+it('shows thinking for hints without rendering partial hint JSON, then keeps all hints hidden', () => {
+  const requestId = open('AI Hint');
+  message({
+    type: 'assistantResult',
+    requestId,
+    status: 'pending',
+    result: { thinking: 'Analyze constraints', text: '{"hints":["secret' },
+  });
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(true);
+  expect(elements(render(), 'textarea')).toHaveLength(0);
+  expect(elements(render(), 'ol')).toHaveLength(0);
+  message({
+    type: 'assistantResult',
+    requestId,
+    status: 'ready',
+    result: { hints: ['hidden one', 'hidden two', 'hidden three'] },
+  });
+  expect(elements(render(), 'div').some((p) => p.className === 'assistant-thinking')).toBe(false);
+  expect(elements(render(), 'p').some((p) => p.children === 'hidden one')).toBe(false);
 });
