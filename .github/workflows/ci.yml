@@ -12,6 +12,9 @@ on:
         default: false
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   check:
     strategy:
@@ -72,3 +75,5 @@ jobs:
         with:
           name: codeforces-workbench-${{ matrix.target }}
           path: '*.vsix'
+          if-no-files-found: error
+          retention-days: 30
