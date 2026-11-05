@@ -18,6 +18,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   check:
+    # Keep existing branch-protection check names when migrating runner images.
+    name: check (${{ matrix.check_label || matrix.os }}, ${{ matrix.target }})
     strategy:
       fail-fast: false
       matrix:
@@ -26,6 +28,7 @@ jobs:
             target: linux-x64
           - os: macos-15
             target: darwin-arm64
+            check_label: macos-14
           - os: macos-15-intel
             target: darwin-x64
           - os: windows-latest
