@@ -1,182 +1,166 @@
 # Codeforces Workbench
 
-Part of [AC-Stride](https://github.com/acstride-labs):
-[VS Code extension](https://github.com/acstride-labs/codeforces-workbench),
-[Codeforces CLI](https://github.com/acstride-labs/codeforces-client), and
-[product website](https://github.com/acstride-labs/acstride-web).
+**Read the problem. Write the solution. Run the tests. Stay in VS Code.**
 
-The Marketplace extension identity is `acstride.codeforces-workbench`. Settings use `codeforcesWorkbench.*`, workspace metadata lives in `.codeforces-workbench`, and build environment variables use `CODEFORCES_WORKBENCH_*`.
+Codeforces Workbench is a desktop VS Code extension for importing Codeforces contests and individual problems, testing solutions locally, and following official results. It also supports local practice problems and optional AI assistance.
 
+Part of [AC-Stride](https://github.com/acstride-labs), alongside [Codeforces Client](https://github.com/acstride-labs/codeforces-client) and the [product website](https://acstride.com/en).
 
-A Codeforces extension for desktop VS Code, with C++, Python, Java and Kotlin support and English, 简体中文, Русский and 日本語 interfaces. The extension uses a pinned, embedded ACStride Codeforces Client as the sole Codeforces client for metadata, statements, samples, images, submission records and rankings. The anonymous statement downloader, private Python runtime, curl_cffi, CA certificates and Codeforces Client are bundled in the platform-specific VSIX: no user-side Go/Python/pip setup or extra downloads.
+[![CI](https://github.com/acstride-labs/codeforces-workbench/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/acstride-labs/codeforces-workbench/actions/workflows/ci.yml)
 
-## What is included
+[Get started](#get-started) · [Features](#features) · [AI assistance](#ai-assistance) · [Development](#development) · [Report an issue](https://github.com/acstride-labs/codeforces-workbench/issues)
 
-- Multiple contest folders, independent problems, countdowns and incremental downloads when problems are released. The sidebar groups Codeforces contests, independent Codeforces problems and local practice; each contest opens a compact problem list with official attempt-state icons.
-- Public statements with sanitized HTML, local math rendering, supported image caching and official samples.
-- Separate C++, Python, Java and Kotlin solutions for each problem, sharing read-only official samples and editable custom tests.
-- Compilation/execution, cancellation, stdout/stderr, local AC/WA/RE/TLE/OLE/CE and first-token output differences.
-- Public submissions by a configurable handle, official verdicts including pretests vs final acceptance, cached rankings, top 100, nearby-handle and search views.
-- One-click submission with an official-language picker and a native confirmation dialog showing the account, problem, language and file. Receipt reconciliation binds notifications to an exact submission ID; pretests and final acceptance remain distinct.
-- Compact case tabs: verified passes are green, all abnormal verdicts are red; run-only results stay neutral. Single-case runs preserve other results and switching tabs preserves unsaved test drafts.
-- Configurable four-language interface, live switching and a separate settings page for preferences/tools.
+> Preview software. This README describes the current source tree; published packages may have fewer features. Codeforces sign-in and automatic submission are experimental.
 
-Public downloads and rankings remain anonymous. One-click submission uses Codeforces Client's **experimental** session/submission commands only after explicit user action and confirmation. Sign in from the **Codeforces account** section at the top of **Settings**, using native VS Code username/password inputs; only Codeforces Client receives credentials via stdin, and it stores the resulting session in the OS keyring. The extension never stores passwords or imports browser cookies. Use **AC-Stride: Sign in to Codeforces** to reconnect and **Sign out of Codeforces** to remove the local session.
+## Features
 
-Login and automatic submission have not been verified against a real account. Site verification/2FA may prevent them. Unknown submissions are never automatically resent. Receipts survive restart and are checked against exact source identity before an official submission ID is monitored. An unknown receipt may require checking the official website; do not repeatedly submit. No CAPTCHA is solved or bypassed.
+- **A workbench for each problem.** Read statements with rendered mathematics, edit code in the native VS Code editor, and run official samples or your own tests.
+- **Contests, single problems, or local practice.** Import a whole contest, add one Codeforces problem, or create a problem without connecting to Codeforces.
+- **Four solution languages.** Use C++, Python, Java, or Kotlin, with separate source files for each language and shared test cases.
+- **Useful local verdicts.** See AC, WA, runtime errors, timeouts, compilation errors, output limits, and the first differing output token. Run one case or all cases.
+- **Codeforces context.** Follow contest countdowns, rankings, and public submission results. Copy a solution for manual submission or use the experimental authenticated submission flow.
+- **Optional AI tools.** Translate statements, reveal progressive hints, review your code, or generate a reference solution using your own OpenAI-compatible provider.
 
-The CLI owns all Codeforces HTTP, statement/sample parsing and image downloads. The extension validates structured results and sanitizes HTML for display. Tools are bundled in the VSIX with no runtime downloads.
+The interface supports **English, 简体中文, Русский, and 日本語**. Interface language and AI response language can be configured separately.
 
-## Start here
+## Get started
 
-1. Install the VSIX matching your operating system and CPU using **Extensions: Install from VSIX…**. Build targets are Windows x64, macOS Apple Silicon/Intel and Linux x64 (glibc, Ubuntu 22.04+ baseline); other architectures and Alpine/musl are not supported yet. Marketplace publishing is not configured.
-2. Open a trusted, single local workspace folder. A C++ compiler and/or Python 3 is only required to **run your own solutions**, not to download/read problems.
-3. Open **AC-Stride: Open Contest Center**. Public problem downloads are automatic and always enabled; there is no setup or manual download switch.
-4. Set the default programming language beside code templates in global Settings. Use the plus beside Codeforces Contests to import a contest URL or numeric ID; imports never prompt for language. Released problems download automatically. Keep VS Code running through the start for upcoming contests. Missing statements show download progress; each problem gets up to four automatic attempts with backoff, then a failure message. Selecting an undownloaded/failed problem starts or resumes a download cycle, with duplicate requests merged. Old auto-download-off settings are ignored. Archived contests pause background work.
-5. Open a problem: the square A/B/C… buttons switch problems, with statement on the left, native VS Code editor on the right and tests beneath the code. Resize the dividers as needed. Use the top language control to switch between C++ and Python without discarding either source. Official samples are read-only; **+** adds and selects a custom-case tab.
-6. Beside **Run all**, **Copy code and open submission** saves and copies the selected source and opens the official submission page. **One-click submit** stays disabled until you sign in from Settings; the adjacent **Go to sign in** link opens that page. Once signed in, **One-click submit** saves the selected language's source, checks your session, lets you choose a matching official language, and opens a second confirmation dialog. Cancelling sends nothing. Source/account changes abort sending. After exact receipt verification, official results appear in VS Code notifications. Unknown receipts remain pending across restarts; source is never automatically resubmitted. After login, **My Codeforces handle** is synchronized to the authenticated handle and locked. When signed out, you may edit it for public ranking/submission views.
+### 1. Install the extension
 
-The built-in anonymous downloader is **not a guarantee against site verification**. No CAPTCHA is solved or bypassed by the extension. Failed downloads do not block local coding/testing or erase saved work. An absent/incompatible bundled executable reports a reinstall-the-correct-VSIX error; AC-Stride never silently downloads components or falls back to installing pip packages.
+Use **desktop VS Code 1.95 or newer**. In this repository's **Releases** page, choose the VSIX matching your operating system and CPU:
 
-### No system Python changes
+| Your system                      | Package target |
+| -------------------------------- | -------------- |
+| Windows x64                      | `win32-x64`    |
+| macOS Apple Silicon              | `darwin-arm64` |
+| macOS Intel                      | `darwin-x64`   |
+| Linux x64, glibc / Ubuntu 22.04+ | `linux-x64`    |
 
-The private runtime lives only inside AC-Stride's extension directory and is launched by Codeforces Client using an install-relative absolute path as a short-lived child process. It does not install a system interpreter, modify PATH/environment variables, register file associations, install packages in user environments, start a browser or listen on a port. Python/native-library injection variables are removed only from the child's environment. HTTPS uses the bundled certifi CA store; standard proxy environment settings remain available. New CA/native-library versions ship with extension updates, not runtime component installers. Existing OS security controls are not bypassed.
+In VS Code, open the Command Palette and run **Extensions: Install from VSIX…**, then select the package. Other architectures, Alpine/musl, and browser-based VS Code are not supported.
 
-This runtime is exclusively for public downloads, not for executing solutions. The solution Python interpreter/compiler remains user-configurable and separate.
+Public problem imports use the bundled Codeforces Client and downloader. You do not need to install Go or a separate Python runtime to read problems.
 
-### If a problem cannot be downloaded
+### 2. Set up your solution language
 
-Downloads retry automatically up to four times per problem. Selecting a failed problem starts another bounded attempt cycle; the statement pane updates on success/failure. You can keep coding and editing custom cases while waiting. Imported samples refresh the open test view without discarding custom drafts. Existing code, tests and cached statements are preserved.
+Open a single local folder and trust the workspace to compile or run code. Open **AC-Stride: Settings**, choose your default language under **Coding settings**, and configure the tools you use:
 
-## Independent Codeforces problems
+| Language | Local tools                                  |
+| -------- | -------------------------------------------- |
+| C++      | A C++20 compiler, such as `g++` or `clang++` |
+| Python   | Python 3, normally `python3`                 |
+| Java     | A JDK; version 17 or newer is recommended    |
+| Kotlin   | The standalone Kotlin compiler and a JDK     |
 
-Use the plus beside **Codeforces Problems**, then paste a regular contest/problem URL, a problemset URL, or an ID such as `2261A`. Only that problem is imported. The statement has no multi-problem rail, while code editing, official samples, custom tests, copying/submitting and verdict notifications reuse the contest workflow. Files are isolated in `codeforces-problems/<contestId>/`, and importing a single problem does not add its contest to the contest list. Reimporting opens the saved solution without replacing code or changing its import order.
+Run the relevant **Environment checks** in Settings to confirm that your compiler or interpreter works. These tools run your solutions; they are separate from the bundled problem downloader.
 
-All three sidebar lists use the original import timestamp, newest first. Refreshing, reopening and switching languages preserve it. Older data uses the original folder creation time as a fallback. New imports use the global default language; existing solutions keep their selected language. A contest statement's rail has a rankings-style icon that returns to that contest's details.
+### 3. Try your first problem
 
-## Local practice
+For a quick offline check:
 
-**AC-Stride: Create Local Problem** works independently of Codeforces. Enter an ID/title; the language comes from the default programming language setting. The default template sums two integers with a `2 3 → 5` test. Run using the tests pane below the editor or `Cmd+Alt+R` on macOS / `Ctrl+Alt+R` elsewhere. **AC-Stride: Switch Solution Language** also works for local practice. Change expected output to `6` to inspect a WA difference.
+1. Run **AC-Stride: Create Local Problem** from the Command Palette.
+2. Enter an ID and title. The default template reads two integers and prints their sum.
+3. Select **Run all**. The starter test `2 3 → 5` should pass.
+4. Change the expected output to `6` and rerun to see a WA result and the differing token.
 
-Local AC is **not official acceptance**. The default checker compares tokens, ignoring whitespace but preserving case and numeric spelling. Uncheck expected output for run-only mode; blank expected output is a real expectation. Memory use is not measured, and wall-clock timings are not Codeforces timings. Local programs execute on your computer: this is **not a security sandbox**. Output is capped at 1 MB per process, compilation at 30 seconds, and each test has a configurable wall-clock limit.
+Use **Ctrl+Alt+R** on Windows/Linux or **Cmd+Alt+R** on macOS to run tests from a solution file.
 
-## Settings
+## Work with Codeforces
 
-The AC-Stride sidebar has three native peer views, independently toggleable from the container’s “…” menu. Each has one plus action: import a contest, import a Codeforces problem, or create a local problem. The native VS Code extension settings page starts with an **Open AC-Stride settings panel** command link above the interface-language selector. The settings gear is in the contest view toolbar; stable VS Code APIs do not support adding a custom gear to a multi-view container title. Click a contest to open its information page. Global Settings contains Codeforces login, interface language, your handle, C++/Python tools/arguments/templates, local time limit and environment checks. Contest information and statements share one editor tab named after the contest. The left rail combines the overview/rankings icon and problem buttons; there is no Problems tab. The header shows an ended label or countdown. There is no per-contest settings tab. No downloader-status panel or center-navigation button crowds Settings. Language applies immediately without discarding open forms or test drafts; statements, code and raw tool diagnostics stay in their original language.
+Open the **AC-Stride** sidebar. Its three lists keep contests, individual Codeforces problems, and local practice separate.
 
-Choose **User settings** or **This workspace** before editing tool/tracking settings. Workspace settings override user settings; environment checks use the active saved configuration. Save/discard draft changes before switching scope or contest. Language is always an application-level user preference. Archive preserves all local code/tests.
+### Import a contest or a problem
 
-Environment checks are at the top of Settings. **Check all** (自动检测) checks configured C++ compilation/execution and Python execution, continues if one fails, and marks each result separately. It does not install tools, scan arbitrary executables or change your configuration. Passed checks show a green tick; failures have expandable diagnostics. Changing tool configuration clears previous ticks, and checks must be rerun after reloading VS Code.
+- In **Codeforces Contests**, select **+** and enter a contest URL or numeric ID.
+- In **Codeforces Problems**, select **+** and enter a problem URL or an ID such as `2261A`.
+- Select a downloaded problem to open its statement, source file, and tests. For a contest, use the problem buttons to move between tasks.
 
-Under **Code templates**, choose C++ or Python on the left and paste starter code in the editor on the right. Drafts are independent, so switching the language does not lose edits. Save Settings to persist them at the selected user/workspace scope; Restore default fills the built-in template. `${PROBLEM_ID}` inserts the problem index. Templates are used only when creating a new solution file (including the first switch to a language); existing solutions are never replaced. Inline code takes priority over the legacy template-file setting. Empty inline code falls back to that file or the bundled default.
+Released statements and samples download automatically. For an upcoming contest, keep VS Code open through its start. Downloads retry on failure; selecting a failed problem starts another attempt. You can continue with saved statements and local tests while Codeforces is unavailable.
 
-- `codeforcesWorkbench.solution.defaultLanguage`: `cpp`, `python`, `java` or `kotlin` for newly imported contests/problems and local practice.
-- `codeforcesWorkbench.ui.language`: `auto` (follow VS Code), `en`, `zh-CN`, `ru`, `ja`.
-- `codeforcesWorkbench.codeforces.handle`: optional public read-only handle; no password is needed.
-- `codeforcesWorkbench.cpp.compiler`: compiler executable/path, default `g++`; `clang++` is supported.
-- `codeforcesWorkbench.cpp.args`: argument array, default `-std=c++20 -O2 -Wall -Wextra`.
-- `codeforcesWorkbench.python.interpreter`: solution interpreter, default `python3`; independent of the download helper and Microsoft's Python extension.
-- `codeforcesWorkbench.python.args`: additional solution interpreter arguments.
-- `codeforcesWorkbench.run.timeoutMs`: per-test timeout, default 2000 ms.
-- `codeforcesWorkbench.{cpp,python,java,kotlin}.templateCode`: editable starter code with `${PROBLEM_ID}` substitution.
-- `codeforcesWorkbench.{cpp,python,java,kotlin}.templatePath`: legacy optional template files, used only when inline code is empty.
+Imports preserve existing solution files. Contest files live under `contests/`, individual Codeforces problems under `codeforces-problems/`, and workspace metadata under `.codeforces-workbench/`.
 
-C++ completion comes from your installed language extension, not AC-Stride. Python syntax/runtime errors show tracebacks. Every test uses a fresh process. C++ source snapshots compile once per run; Python executes a source snapshot with UTF-8/unbuffered mode. The macOS compiler helper detects the active Apple SDK where needed.
+### Write and test
 
-UI text is maintained in four JSON catalogs shared by React and the extension host, with key/parameter checks and English fallback. Native static VS Code command/menu/configuration labels use generated `package.nls*.json` resources and follow VS Code's own display language; AC-Stride's live preference controls its pages, tree labels and dynamic notifications. See [the localization/settings design](docs/localization-and-settings.md) for architecture and adding translations.
+Switch languages with **AC-Stride: Switch Solution Language**. Each language keeps its own source file. Customize starter code under **Settings → Coding settings**; templates apply when a source file is first created.
 
-## Workspace and migration
+Official samples are read-only. Add a custom test with **+**, save test edits, then run one case or all cases. Clear the expected-output option for a run-only case; an enabled but empty expected output means that the program should print nothing.
 
-```text
-your-workspace/
-  .codeforces-workbench/contests.json
-  contests/
-    1234/
-      .codeforces-workbench/contest.json
-      .codeforces-workbench/statements/     # cached sanitized statements/assets
-      .codeforces-workbench/standings.json
-      .codeforces-workbench/status-HANDLE.json
-      A/solutions/main.cpp
-      A/solutions/main.py
-      A/tests/samples/       # official, read-only in UI
-      A/tests/custom/        # user-editable
-    5678/                    # independent sources/tests, including its own A
-  .codeforces-workbench/workspace.json     # legacy local-practice index
-  A/main.cpp               # local practice remains compatible
-  B/main.py
-```
+The checker compares whitespace-separated tokens, preserving case and numeric spelling. Local AC is not official Codeforces acceptance: memory is not measured, timings differ from the judge, and floating-point or special-judge problems may need different checking rules. Solutions execute on your machine without a security sandbox.
 
-Solutions, saved tests and cached public data persist across restarts. Run results are session-only. Archive stops background contest work; reimport never overwrites solutions/custom tests. Existing local-practice and contest folders remain readable. Legacy browser profiles and 0.5's download venv are **not automatically deleted** and are not used. Modern Codeforces Client sessions live in the OS keyring; modern submission receipts/source snapshots live in its private state directory. Extension tracking metadata lives in VS Code global state and contains no passwords/cookies/source. The removed `codeforces.setupPython` / `downloadPython` settings are ignored. No Chrome installation is removed. No backend service or telemetry is used.
+### Submit and follow results
 
-## Development and verification
+**Copy code and open submission** saves the selected solution, copies it, and opens the official submission page for manual submission.
 
-Node.js 24 LTS is required for development. **Developers/CI only** need Python 3.10+ to build the downloader. Its pinned build dependencies install into the git-ignored `.build/downloader/venv`; frozen output is generated under `resources/downloader/`, also git-ignored. No prebuilt native binaries are committed. A real C++ compiler and solution Python interpreter are used by integration tests; override `CXX` / `PYTHON` if needed.
+**One-click submit** requires signing in through Settings. It asks you to select an official language and confirm the account, problem, and source before sending. If a submission's status is uncertain, check Codeforces before trying again; unknown submissions are not automatically resent.
+
+Sign-in and automatic submission have not been verified against a real account. Site verification or 2FA may prevent them. Public problem downloads and rankings do not require signing in.
+
+## AI assistance
+
+AI tools are optional. Under **Settings → AI assistance**, enter your provider's OpenAI-compatible Base URL, model name, and API key if required, then select **Test connection**. Keys are stored in VS Code SecretStorage and bound to the configured endpoint.
+
+| Tool                  | What it does                                              | Data sent to your provider                                     |
+| --------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| Statement translation | Translates the problem into your selected language        | Original statement HTML                                        |
+| AI Hint               | Generates progressive hints, hidden until you reveal them | Original statement and selected solution language              |
+| AI Debug              | Explains possible issues without replacing your code      | Original statement and current source, including unsaved edits |
+| AI Solution           | Generates reference code in the selected language         | Original statement and selected solution language              |
+
+Translation is disabled by default. You can enable automatic translation after import, customize prompts and response languages, and configure the shared response cache. Debug and Solution stream answer text when supported by the provider; Hint, Debug, and Solution requests have a 300-second total timeout.
+
+When a compatible provider streams thinking text, Debug and Solution show it in a muted single-line ticker above the answer. Thinking stays separate from generated code and is not saved in the response cache. The ticker appears only when the provider returns thinking text.
+
+Generated code is for review and testing. The extension does not overwrite your source or automatically submit AI output. Use AI tools for practice and follow each contest's rules.
+
+## Troubleshooting
+
+| Problem                                        | What to check                                                                                                              |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| A compiler or interpreter cannot be found      | Check its executable path in Settings, then run the corresponding environment check.                                       |
+| Problems do not download                       | Check network access and Codeforces availability, then select the problem to retry. Existing code and tests remain usable. |
+| A bundled component is missing or incompatible | Reinstall the VSIX for your OS and CPU. Components are supplied with the extension package.                                |
+| Tests show WA despite similar output           | Check the first differing token. Whitespace is ignored; case and numeric spelling are significant.                         |
+| An AI request fails                            | Test the configured endpoint, model, and credentials. Provider errors and timeouts can be retried.                         |
+| A submission has an unknown result             | Check the official website before sending it again.                                                                        |
+
+To report a bug, open an [issue](https://github.com/acstride-labs/codeforces-workbench/issues) with your extension version, OS/CPU, reproduction steps, and relevant diagnostics. Remove credentials and private source code before sharing logs.
+
+## Development
+
+For native builds, use a supported target OS with **Node.js 24**, **Go 1.26+**, and **Python 3.10+**; CI uses Python 3.12. Install a C++ compiler, JDK 17+, and Kotlin compiler to exercise all solution runners. CI uses Kotlin 2.2.0.
 
 ```sh
+git clone https://github.com/acstride-labs/codeforces-workbench.git
+cd codeforces-workbench
 npm ci
 npm run build:codeforces-client
 npm run build:downloader
 npm run check
-npm run package
-npm run verify:vsix
-# Optional public live checks using the bundled binary, never a system Python:
-CODEFORCES_WORKBENCH_LIVE=1 npm test -- test/live/codeforces.test.ts
 ```
 
-Set `CODEFORCES_WORKBENCH_BUILD_PYTHON` to an absolute build interpreter path if needed. `npm run package` refuses to produce a VSIX without the matching, hash-verified working downloader. It always sets the VSIX platform target. CI builds all four targets independently, verifies frozen startup with empty PATH and invalid PYTHONHOME/PYTHONPATH, and extracts the final VSIX to check file hashes/executable permissions/startup. Package notices accompany the binary. See `packaging/README.md` for distribution details.
+The two native build steps fetch the pinned client source and generate the bundled executables. They require network access. `npm run check` runs type checks, automated tests, release-policy tests, and the extension/Webview build. Live Codeforces tests are skipped by default.
 
-Live public checks are opt-in (`CODEFORCES_WORKBENCH_LIVE=1`) and exercise the actual bundled CLI for metadata, public submissions, standings, structured statements and workspace sample import. Fixture and offline checks do not establish live website availability or success on other platforms. See `test/MANUAL.md` for acceptance steps.
+Open the repository in desktop VS Code and press **F5** to launch **Run AC-Stride Extension** in an Extension Development Host. Build the native bundles first; the launch configuration rebuilds the extension code.
 
-Architecture: `domain` contains local models/checking; `application` handles scheduling and workspace imports; `infrastructure/codeforces` contains the CLI adapter, typed data mapping, display sanitization and a priority queue. All network requests, Codeforces DOM parsing, samples and image caching belong to Codeforces Client. The extension owns solutions/custom tests, native views, countdowns and React UI. Codeforces Client coordinates request starts across its processes with a shared 2.1-second minimum interval. The extension has no direct network transport, including in source development mode; build the embedded tools before testing Codeforces features.
+To create and verify a platform-specific installation package:
 
-Only regular public contests and desktop single-folder file workspaces are supported. Gym/group/private contests, virtual participation, stress testing, custom checkers and web-only VS Code are out of scope. Public API data may be unavailable, frozen, delayed or limited to recent submissions. The publisher is a development placeholder, no Marketplace release is configured, and no open-source license has been selected.
+```sh
+npm run package
+npm run verify:vsix
+```
 
-Background rankings refresh only while the Rankings tab is visible. Submission refresh normally runs at 30-second intervals, with faster polling for known pending submissions. A background network failure keeps cached data and shows a section-specific notice rather than a persistent global error. Diagnostics identify the contest and operation in the **AC-Stride · Codeforces** output channel. Manual operation failures still report errors. Public API operations have a 25-second total deadline (including tool-side pacing); downloads use a longer deadline.
+PR CI builds packages for all four platforms. After a build finishes, `github-actions[bot]` updates a comment on the PR with the commit, build result, and available test packages. GitHub sign-in is required to access artifacts, which are retained for 30 days. These are test builds and are not published to Marketplace. Fork PRs may need maintainer approval before CI runs.
 
-### AI connection and statement translation
+Useful references:
 
-Settings has four tabs: Environment checks, Basic settings, Coding settings and AI assistance. Configure an OpenAI-compatible Base URL and model under AI assistance; API keys are stored in VS Code SecretStorage and bound to the endpoint. Test connection displays the returned message or error.
+- [Native bundle builds and verification](packaging/README.md)
+- [Manual end-to-end checks](test/MANUAL.md)
+- [Localization and settings](docs/localization-and-settings.md)
+- [CI checks and branch protection](docs/ci-checks.md)
+- [Release and publishing guide](docs/RELEASING.md)
+- [Changelog](CHANGELOG.md)
 
-Under AI assistance, enable statement translation, optionally translate automatically after import, and edit the English default prompt. Choose a target language; every `{{language}}` placeholder is replaced with its English language name before sending, without changing the saved prompt. Simplified Chinese is the default, with traditional Chinese, English, Russian, Japanese, Korean, German, French and Spanish also supported. Restoring the default prompt requires confirmation and changes only the draft until saved. Translation is off by default. Clicking the translation icon next to a problem ID toggles original/translated statements; unfinished tasks show progress and failed tasks can be retried. Only problem HTML is sent to the configured model. Code and tests are not sent. Mathematics, samples and allowed local images are retained; generated HTML is sanitized before display.
+For contributions, describe the problem, include reproduction steps or relevant tests, and explain how you validated the change. Keep generated native bundles and local build output out of commits.
 
-AI requests use a shared input/output cache before transport. It coalesces identical in-flight requests, runs at most ten model calls concurrently, and uses a persisted LRU under extension global storage. Configure its enable switch, entry limit (default 100) and storage limit (default 50 MB) in AI assistance. Either limit evicts least recently used entries; oversized results are returned without displacing existing entries. Disabling caching preserves saved entries but skips request reads/writes. Connection tests always bypass caching. Cache identity covers the actual endpoint, model and fully rendered messages, partitioned by a credential digest; raw API keys are never persisted. Failures are not cached. Translation rendering separately sanitizes cached/generated HTML.
+## License
 
-## Java and Kotlin
-
-Install a JDK (17 or newer recommended). Kotlin also requires the standalone Kotlin compiler on PATH. These solution toolchains are detected locally, rather than bundled into the extension. In Settings → Coding, choose Java or Kotlin as the default language and customize the starter code. Settings → Environment checks compiles and runs a small program for each language.
-
-- Java uses `Main.java` with a `Main` class and `public static void main(String[] args)`.
-- Kotlin uses `Main.kt` with a top-level `fun main()`; its JAR includes the Kotlin runtime.
-- Configure `codeforcesWorkbench.java.compiler` (`javac`) or `codeforcesWorkbench.kotlin.compiler` (`kotlinc`), `.args` for compiler arguments, `.runtime` (`java`) and `.runtimeArgs` for JVM flags. Each command accepts an executable name or absolute path, without embedded arguments. On Windows, the official Kotlin distribution's `bin/kotlinc.bat` is supported through a shell-free Java launcher.
-- Compilation has a separate 60-second limit; each test uses the configured local execution timeout. Temporary source snapshots and build outputs are removed after completion or cancellation.
-- Switch languages from the workbench selector. Existing source files are preserved. Codeforces submission offers the matching Java or Kotlin compiler versions supplied by the contest; choose a version compatible with your code and local toolchain.
-
-### AI Hint, Debug and Coding
-
-Configure and test your provider under **Settings → AI assistance**. The original English statement is used even while a translated view is selected. Please do not use these features during an ongoing contest.
-
-- **AI Hint**: open it beside the statement identity. By default three progressive hints are generated; each stays hidden until its eye button is clicked. Configure 1–10 hints.
-- **AI Debug**: open it on the workbench. It sends the English statement and the current solution text, including unsaved editor changes, and asks for issues and explanations without corrected source code.
-- **AI Coding**: open a read-only editor-style dialog with reference code in the current solution language. Copy it if needed; the extension never replaces source files or submits generated code. Generated references still need review and testing.
-
-AI Hint, Debug and Coding requests have a 300-second total timeout. Timeout and cancellation errors use task-neutral messages in all four interface languages.
-
-Debug and Coding stream the answer as it arrives. If a compatible service also streams `reasoning_content` or `reasoning`, a muted single-line ticker above the answer shows that thinking text while the request is running. Thinking is kept separate from reference code and is not saved in the response cache. OpenAI's native Chat Completions API does not expose raw thinking text; no ticker is shown when the service does not return it.
-
-Each feature has a visibility switch, response-language selector, and editable prompt. Save AI assistance settings to apply them. Restoring a default prompt requires confirmation and updates only the draft until saved. `{{language}}`, `{{programmingLanguage}}`, and `{{hintCount}}` are substituted before requesting the model; the original prompt is preserved. Statement/source data is provided separately. Tasks share the configured input/output cache and duplicate in-flight requests are merged. Results for an old problem cannot appear in another problem’s dialog.
-
-## Incremental downloads
-
-Contest import fetches a lightweight problem list without loading the complete leaderboard. Codeforces Client downloads the first problem's statement and samples first, then starts two FIFO consumers for the remaining problems. Completion order can differ when requests take different amounts of time. Standalone imports download just the requested problem.
-
-Statements and samples become usable before images finish. Images are cached in a separate background queue and update the open statement automatically. Public reads use one persistent Codeforces Client process and a two-process anonymous transport pool to reuse network connections. Closing the window cancels pending work and reaps those processes; cached statements, code and tests remain available. Existing request pacing and bounded retry behavior remain in place. Full rankings are fetched for the visible overview after a statement is available, or when explicitly refreshed.
-
-## Release process
-
-The first public preview is **0.1.0**. Publishing a GitHub Release starts the four-platform build, attaches verified VSIX packages and SHA256 checksums, and publishes the same packages to Marketplace when authentication is configured. See [the release runbook](docs/RELEASING.md) for one-time authentication setup, release channels and retries.
-
-## PR test packages
-
-Every pull request runs the four-platform CI build. After it finishes, `github-actions[bot]` creates or updates one **VSIX test packages** comment with downloads for Linux x64, Windows x64, macOS Apple Silicon and macOS Intel. Sign in to GitHub, download and extract the matching ZIP, then run **Extensions: Install from VSIX…** in desktop VS Code. Artifacts are retained for 30 days; failed platforms link to the build logs instead. PR builds do not publish to Marketplace or create a Release.
-
-New pushes cancel older PR builds. Reports are bound to the PR's current commit; completed old builds cannot replace the latest report. Fork PRs may require a maintainer to approve the CI run under GitHub's Actions policy. The comment workflow runs trusted default-branch code with comment permissions, without executing PR code or downloading artifacts. Repository Actions must be enabled and organization policy must permit the workflow's `pull-requests: write` permission. The bot starts working after its workflow is merged into the default branch; earlier runs do not generate comments retroactively (rerun CI to publish a report).
+This repository is source-available, with **all rights reserved**. It is not distributed under an open-source license; see [LICENSE](LICENSE). Bundled third-party components retain their respective licenses and notices.
