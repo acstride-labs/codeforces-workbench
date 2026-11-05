@@ -449,5 +449,7 @@
   "AI Translation": "AI 翻译",
   "AI Solution": "AI 解答",
   "Save": "保存",
-  "Statement images are loading in the background…": "题面图片正在后台加载…"
+  "Statement images are loading in the background…": "题面图片正在后台加载…",
+  "AI request timed out. Please retry.": "AI 请求超时，请重试。",
+  "AI request cancelled.": "AI 请求已取消。"
 }

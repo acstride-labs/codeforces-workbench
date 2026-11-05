@@ -124,3 +124,13 @@ it('never caches a disconnected partial response and permits a fresh retry', asy
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+it('uses a task-neutral localized timeout message', async () => {
+  const request: typeof fetch = async (_url, init) =>
+    new Promise((_resolve, reject) => {
+      init!.signal!.addEventListener('abort', () => reject(init!.signal!.reason), { once: true });
+    });
+  await expect(new AiClient(request).complete(config, '', [], undefined, 5)).rejects.toThrow(
+    'AI request timed out. Please retry.',
+  );
+});
