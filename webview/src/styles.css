@@ -955,3 +955,45 @@ button.ai-action-button:hover {
 .translation-action:has(.translation-hint)::after {
   display: none;
 }
+
+.assistant-thinking {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2rem;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  overflow: hidden;
+  color: var(--vscode-descriptionForeground);
+  background: var(--vscode-textCodeBlock-background, #202020);
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.assistant-thinking-label {
+  flex-shrink: 0;
+}
+.assistant-thinking-track {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.assistant-thinking-track > span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: assistant-thinking-scroll 18s linear infinite;
+}
+@keyframes assistant-thinking-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-thinking-track > span {
+    animation: none;
+    padding-left: 0;
+  }
+}

@@ -15,7 +15,12 @@ export function redactAiSecret(text: string, key: string) {
 export class AiClient {
   private streams = new Map<
     string,
-    { task: Promise<string>; listeners: Set<(text: string) => void>; latest: string }
+    {
+      task: Promise<string>;
+      listeners: Set<(text: string, thinking?: string) => void>;
+      latest: string;
+      thinking: string;
+    }
   >();
   constructor(
     private request: typeof fetch = fetch,
@@ -35,12 +40,12 @@ export class AiClient {
     signal?: AbortSignal,
     timeoutMs = this.timeoutMs,
     validate?: (output: string) => void,
-    onOutput?: (text: string) => void,
+    onOutput?: (text: string, thinking?: string) => void,
   ): Promise<string> {
     const checked = aiConfigSchema.parse(config);
     const base = normalizeAiBaseUrl(checked.baseUrl);
     const endpoint = base.endsWith('/chat/completions') ? base : `${base}/chat/completions`;
-    const listeners = new Set<(text: string) => void>();
+    const listeners = new Set<(text: string, thinking?: string) => void>();
     const streamKey = createHash('sha256')
       .update(JSON.stringify([endpoint, checked.model, key, messages]))
       .digest('hex');
@@ -48,7 +53,7 @@ export class AiClient {
       const existing = this.streams.get(streamKey);
       if (existing) {
         existing.listeners.add(onOutput);
-        if (existing.latest) onOutput(existing.latest);
+        if (existing.latest || existing.thinking) onOutput(existing.latest, existing.thinking);
         try {
           return await existing.task;
         } finally {
@@ -58,14 +63,17 @@ export class AiClient {
       listeners.add(onOutput);
     }
     let lastPublished = 0;
-    const publish = (text: string, force = false) => {
+    const publish = (text: string, thinking = '', force = false) => {
       const entry = this.streams.get(streamKey);
-      if (entry) entry.latest = text;
+      if (entry) {
+        entry.latest = text;
+        entry.thinking = thinking;
+      }
       if (!force && Date.now() - lastPublished < 50) return;
       lastPublished = Date.now();
       for (const listener of listeners) {
         try {
-          listener(text);
+          listener(text, thinking);
         } catch {}
       }
     };
@@ -83,15 +91,20 @@ export class AiClient {
     };
     const task = this.cache
       ? this.cache.request(
-          { endpoint, model: checked.model, messages, stream: false },
+          {
+            endpoint,
+            model: checked.model,
+            messages,
+            stream: false,
+          },
           (cacheSignal) => execute(signal ? AbortSignal.any([signal, cacheSignal]) : cacheSignal),
           key,
         )
       : execute(signal);
-    if (onOutput) this.streams.set(streamKey, { task, listeners, latest: '' });
+    if (onOutput) this.streams.set(streamKey, { task, listeners, latest: '', thinking: '' });
     try {
       const output = await task;
-      if (onOutput) publish(output, true);
+      if (onOutput) publish(output, '', true);
       return output;
     } finally {
       if (onOutput) this.streams.delete(streamKey);
@@ -104,7 +117,7 @@ export class AiClient {
     messages: { role: 'system' | 'user'; content: string }[],
     signal?: AbortSignal,
     timeoutMs = this.timeoutMs,
-    onOutput?: (text: string) => void,
+    onOutput?: (text: string, thinking?: string) => void,
   ): Promise<string> {
     const checked = aiConfigSchema.parse(config);
     const base = normalizeAiBaseUrl(checked.baseUrl);
@@ -127,7 +140,9 @@ export class AiClient {
       });
       if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
         return redactAiSecret(
-          await readChatStream(response, (text) => onOutput?.(redactAiSecret(text, key))),
+          await readChatStream(response, (text, thinking) =>
+            onOutput?.(redactAiSecret(text, key), redactAiSecret(thinking ?? '', key)),
+          ),
           key,
         );
       }

@@ -81,6 +81,7 @@ export const assistantRequestSchema = z
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;
 export interface AssistantResult {
   text?: string;
+  thinking?: string;
   hints?: string[];
 }
 export const assistantReadySchema = z.object({ type: z.literal('assistantReady') }).strict();
