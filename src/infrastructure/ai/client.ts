@@ -162,13 +162,8 @@ export class AiClient {
         throw new Error('AI service returned no text. Check the model and API compatibility.');
       return redactAiSecret(content.trim(), key);
     } catch (error) {
-      if (timeout.aborted)
-        throw new Error(
-          timeoutMs === 30000
-            ? 'AI connection test timed out after 30 seconds.'
-            : 'AI translation timed out.',
-        );
-      if (signal?.aborted) throw new Error('AI connection test cancelled.');
+      if (timeout.aborted) throw new Error('AI request timed out. Please retry.');
+      if (signal?.aborted) throw new Error('AI request cancelled.');
       throw new Error(redactAiSecret(error instanceof Error ? error.message : String(error), key));
     }
   }
