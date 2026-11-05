@@ -450,5 +450,7 @@
   "AI Solution": "ИИ-решение",
   "Save": "Сохранить",
   "Statement images are loading in the background…": "Изображения условия загружаются в фоне…",
+  "AI request timed out. Please retry.": "Время ожидания запроса к ИИ истекло. Повторите попытку.",
+  "AI request cancelled.": "Запрос к ИИ отменён.",
   "AI is thinking…": "ИИ размышляет…"
 }

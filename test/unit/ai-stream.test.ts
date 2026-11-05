@@ -177,3 +177,13 @@ it('replays reasoning to late stream subscribers and keeps it out of the final a
   expect(await first).toBe('answer');
   expect(await second).toBe('answer');
 });
+
+it('uses a task-neutral localized timeout message', async () => {
+  const request: typeof fetch = async (_url, init) =>
+    new Promise((_resolve, reject) => {
+      init!.signal!.addEventListener('abort', () => reject(init!.signal!.reason), { once: true });
+    });
+  await expect(new AiClient(request).complete(config, '', [], undefined, 5)).rejects.toThrow(
+    'AI request timed out. Please retry.',
+  );
+});

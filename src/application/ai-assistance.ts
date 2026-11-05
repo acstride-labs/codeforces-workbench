@@ -114,7 +114,7 @@ export class AiAssistance {
         key,
         messages,
         this.abort.signal,
-        120000,
+        300000,
         (output) => {
           parseAssistantResult(kind, output, options.hintCount);
         },

@@ -94,6 +94,7 @@ it('coding uses the selected programming language and never includes the existin
   const f = fixture();
   f.complete.mockResolvedValue('print(1)');
   await f.service.run('coding', target, 'Original', 'must-not-send');
+  expect(f.complete.mock.calls[0][4]).toBe(300000);
   const messages = f.complete.mock.calls[0][2] as { content: string }[];
   expect(messages[0].content).toContain('Python 3');
   expect(messages[1].content).not.toContain('must-not-send');
